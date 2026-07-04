@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
+    paths-ignore: 
       - 'README.md'
 
 # Crucial for OIDC: allows the workflow to request a JWT token from GitHub's OIDC provider
