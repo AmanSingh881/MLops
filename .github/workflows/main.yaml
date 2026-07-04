@@ -90,7 +90,7 @@ jobs:
           IMAGE_URI: ${{ needs.build-and-push-ecr-image.outputs.image }}
         run: |
           # Dynamically substitute the new image tag inside your manifest file
-          sed -i "s|image:.*|image: $IMAGE_URI|g" k8s/deployment.yaml
+          # sed -i "s|image:.*|image: $IMAGE_URI|g" k8s/deployment.yaml
           
           # Apply the manifests to the cluster
           kubectl apply -f k8s/
