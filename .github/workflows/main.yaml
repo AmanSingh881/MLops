@@ -60,3 +60,40 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           # Modern alternative to the deprecated ::set-output syntax
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+
+  continuous-deployment:
+    name: Continuous Deployment to EKS
+    needs: build-and-push-ecr-image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1 # Target region for your EKS Cluster
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Update Kubeconfig for EKS
+        run: |
+          aws eks update-kubeconfig --region us-east-1 --name my-first-eks
+
+      - name: Deploy to Amazon EKS
+        env:
+          IMAGE_URI: ${{ needs.build-and-push-ecr-image.outputs.image }}
+        run: |
+          # Dynamically substitute the new image tag inside your manifest file
+          sed -i "s|image:.*|image: $IMAGE_URI|g" k8s/deployment.yaml
+          
+          # Apply the manifests to the cluster
+          kubectl apply -f k8s/
+          
+          # Verify deployment rollout status
+          kubectl rollout status deployment/mltest-deployment
