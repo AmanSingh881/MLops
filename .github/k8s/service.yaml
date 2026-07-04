@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mltest-service
+  labels:
+    app: mltest
+spec:
+  type: LoadBalancer
+  selector:
+    app: mltest
+  ports:
+  - protocol: TCP
+    port: 80         # The port your users will type in their browser (http://<load-balancer-url>)
+    targetPort: 8080 # The internal port your container is listening on
