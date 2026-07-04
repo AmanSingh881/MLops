@@ -1,8 +1,18 @@
-FROM python:3.8-slim-buster
+# 1. Upgrade from buster to bookworm (supported Debian release)
+FROM python:3.8-slim-bookworm
+
 WORKDIR /app
+
 COPY . /app
 
-RUN apt update -y && apt install awscli -y
+# 2. Combined apt commands into a single layer to avoid repository errors and minimize image size
+RUN apt-get update && apt-get install -y \
+    awscli \
+    ffmpeg \
+    libsm6 \
+    libxext6 \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install ffmpeg libsm6 libxext6 unzip -y && pip install -r requirements.txt
-CMD ["python3", "app.py"]
+# 3. Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
